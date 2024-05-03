@@ -3695,6 +3695,23 @@ struct cf_pair {
     guint32 freq;
 };
 
+static const struct cf_pair s1g_table[] = {
+    /* 802.11ah band - US Rules*/
+    {1, 902},  {2, 903},  {3, 903},  {5, 904},  {6, 905},  {7, 905},  {8, 906},
+    {9, 906},  {10, 907}, {12, 908}, {11, 907}, {13, 908}, {14, 909}, {15, 909},
+    {16, 910}, {17, 910}, {18, 911}, {19, 911}, {21, 912}, {22, 913}, {23, 913},
+    {24, 914}, {25, 914}, {26, 915}, {27, 915}, {28, 916}, {29, 916}, {30, 917},
+    {31, 917}, {32, 918}, {33, 918}, {34, 919}, {35, 919}, {37, 920}, {38, 921},
+    {39, 921}, {40, 922}, {41, 922}, {42, 923}, {43, 923}, {44, 924}, {45, 924},
+    {46, 925}, {47, 925}, {48, 926}, {49, 926}, {50, 927}, {51, 927}, {0, 0}};
+
+static const guint s1g_table_freqs[G_N_ELEMENTS(s1g_table)] = {
+    /* 802.11ah band - US Rules*/
+    902, 903, 903, 904, 905, 905, 906, 906, 907, 908, 907, 908, 909, 909, 910, 910, 911,
+    911, 912, 913, 913, 914, 914, 915, 915, 916, 916, 917, 917, 918, 918, 919, 919, 920,
+    921, 921, 922, 922, 923, 923, 924, 924, 925, 925, 926, 926, 927, 927, 0,
+};
+
 static const struct cf_pair a_table[] = {
     /* A band */
     {7, 5035},   {8, 5040},   {9, 5045},   {11, 5055},  {12, 5060},  {16, 5080},  {34, 5170},
@@ -3761,7 +3778,11 @@ guint32
 nm_utils_wifi_freq_to_channel(guint32 freq)
 {
     int i = 0;
-
+    if (freq < 930) {
+        while (s1g_table[i].freq && (s1g_table[i].freq != freq))
+            i++;
+        return s1g_table[i].chan;
+    }
     if (freq > 4900) {
         while (a_table[i].freq && (a_table[i].freq != freq))
             i++;
@@ -3788,6 +3809,8 @@ nm_utils_wifi_freq_to_band(guint32 freq)
         return "a";
     else if (freq >= 2412 && freq <= 2484)
         return "bg";
+    else if (freq >= 800 && freq <= 930)
+        return "s1g";
 
     return NULL;
 }
@@ -3795,7 +3818,7 @@ nm_utils_wifi_freq_to_band(guint32 freq)
 /**
  * nm_utils_wifi_channel_to_freq:
  * @channel: channel
- * @band: frequency band for wireless ("a" or "bg")
+ * @band: frequency band for wireless ("s1g", "a" or "bg")
  *
  * Utility function to translate a Wi-Fi channel to its corresponding frequency.
  *
@@ -3826,6 +3849,14 @@ nm_utils_wifi_channel_to_freq(guint32 channel, const char *band)
         return ((guint32) -1);
     }
 
+    if (nm_streq(band, "s1g")) {
+        for (i = 0; s1g_table[i].chan; i++) {
+            if (s1g_table[i].chan == channel)
+                return s1g_table[i].freq;
+        }
+        return ((guint32) -1);
+    }
+
     return 0;
 }
 
@@ -3833,7 +3864,7 @@ nm_utils_wifi_channel_to_freq(guint32 channel, const char *band)
  * nm_utils_wifi_find_next_channel:
  * @channel: current channel
  * @direction: whether going downward (0 or less) or upward (1 or more)
- * @band: frequency band for wireless ("a" or "bg")
+ * @band: frequency band for wireless ("s1g", "a" or "bg")
  *
  * Utility function to find out next/previous Wi-Fi channel for a channel.
  *
@@ -3844,6 +3875,7 @@ nm_utils_wifi_find_next_channel(guint32 channel, int direction, char *band)
 {
     size_t                a_size  = G_N_ELEMENTS(a_table);
     size_t                bg_size = G_N_ELEMENTS(bg_table);
+    size_t                ah_size = G_N_ELEMENTS(s1g_table);
     const struct cf_pair *pair;
 
     if (nm_streq(band, "a")) {
@@ -3858,6 +3890,12 @@ nm_utils_wifi_find_next_channel(guint32 channel, int direction, char *band)
         if (channel > bg_table[bg_size - 2].chan)
             return bg_table[bg_size - 2].chan;
         pair = &bg_table[0];
+    } else if (nm_streq(band, "s1g")) {
+        if (channel < s1g_table[0].chan)
+            return s1g_table[0].chan;
+        if (channel > s1g_table[ah_size - 2].chan)
+            return s1g_table[ah_size - 2].chan;
+        pair = &s1g_table[0];
     } else
         g_return_val_if_reached(0);
 
@@ -3878,7 +3916,7 @@ nm_utils_wifi_find_next_channel(guint32 channel, int direction, char *band)
 /**
  * nm_utils_wifi_is_channel_valid:
  * @channel: channel
- * @band: frequency band for wireless ("a" or "bg")
+ * @band: frequency band for wireless ("s1g", "a" or "bg")
  *
  * Utility function to verify Wi-Fi channel validity.
  *
@@ -3948,6 +3986,21 @@ nm_utils_wifi_5ghz_freqs(void)
     return a_table_freqs;
 }
 
+/**
+ * nm_utils_wifi_s1ghz_freqs:
+ *
+ * Utility function to return 800-900Ghz Wi-Fi frequencies (802.11ah band).
+ *
+ * Returns: zero-terminated array of frequencies numbers (in MHz)
+ *
+ * Since: 1.2
+ **/
+const guint *
+nm_utils_wifi_s1ghz_freqs(void)
+{
+    _nm_assert_wifi_freqs(s1g_table, s1g_table_freqs);
+    return s1g_table_freqs;
+}
 /**
  * nm_utils_wifi_strength_bars:
  * @strength: the access point strength, from 0 to 100

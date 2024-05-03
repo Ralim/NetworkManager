@@ -144,6 +144,8 @@ const guint *nm_utils_wifi_2ghz_freqs(void);
 NM_AVAILABLE_IN_1_2
 const guint *nm_utils_wifi_5ghz_freqs(void);
 
+const guint *nm_utils_wifi_s1ghz_freqs(void);
+
 const char *nm_utils_wifi_strength_bars(guint8 strength);
 
 /**

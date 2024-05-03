@@ -344,6 +344,9 @@ nm_access_point_connection_valid(NMAccessPoint *ap, NMConnection *connection)
         } else if (g_strcmp0(setting_band, "bg") == 0) {
             if (ap_freq < 2412 || ap_freq > 2484)
                 return FALSE;
+        } else if (g_strcmp0(setting_band, "s1g") == 0) {
+            if (ap_freq < 800 || ap_freq > 930)
+                return FALSE;
         }
 
         setting_chan = nm_setting_wireless_get_channel(s_wifi);

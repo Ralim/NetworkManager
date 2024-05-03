@@ -3182,7 +3182,7 @@ ensure_hotspot_frequency(NMDeviceWifi *self, NMSettingWireless *s_wifi, NMWifiAP
     guint       l;
 
     nm_assert(ap);
-    nm_assert(NM_IN_STRSET(band, NULL, "a", "bg"));
+    nm_assert(NM_IN_STRSET(band, NULL, "a", "bg", "s1g"));
 
     if (nm_wifi_ap_get_freq(ap))
         return;

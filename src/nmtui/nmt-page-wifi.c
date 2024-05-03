@@ -54,6 +54,8 @@ static NmtNewtPopupEntry wifi_mode[] = {{NC_("Wi-Fi", "Client"), NM_SETTING_WIRE
                                         {NULL, NULL}};
 
 static NmtNewtPopupEntry wifi_band[] = {{NC_("Wi-Fi", "Automatic"), NULL},
+                                        /* 802.11ah Wi-Fi network */
+                                        {N_("AH (900 MHz)"), "s1g"},
                                         /* 802.11a Wi-Fi network */
                                         {N_("A (5 GHz)"), "a"},
                                         /* 802.11b / 802.11g Wi-Fi network */

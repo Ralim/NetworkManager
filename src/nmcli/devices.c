@@ -4421,11 +4421,12 @@ do_device_wifi_hotspot(const NMCCommand *cmd, NmCli *nmc, int argc, const char *
             }
             band = *argv;
             if (argc == 1 && nmc->complete)
-                nmc_complete_strings(band, "a", "bg");
-            if (strcmp(band, "a") && strcmp(band, "bg")) {
-                g_string_printf(nmc->return_text,
-                                _("Error: band argument value '%s' is invalid; use 'a' or 'bg'."),
-                                band);
+                nmc_complete_strings(band, "s1g", "a", "bg");
+            if (strcmp(band, "a") && strcmp(band, "bg") && strcmp(band, "s1g")) {
+                g_string_printf(
+                    nmc->return_text,
+                    _("Error: band argument value '%s' is invalid; use 's1g', 'a' or 'bg'."),
+                    band);
                 nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
                 return;
             }

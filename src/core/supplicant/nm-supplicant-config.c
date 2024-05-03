@@ -360,14 +360,21 @@ nm_supplicant_config_get_blobs(NMSupplicantConfig *self)
 }
 
 static const char *
-wifi_freqs_to_string(gboolean bg_band)
+wifi_freqs_to_string(gboolean bg_band, gboolean s1g_band)
 {
-    static const char *str_2ghz = NULL;
-    static const char *str_5ghz = NULL;
+    static const char *str_s1ghz = NULL;
+    static const char *str_2ghz  = NULL;
+    static const char *str_5ghz  = NULL;
     const char       **f_p;
     const char        *f;
 
-    f_p = bg_band ? &str_2ghz : &str_5ghz;
+    if (bg_band) {
+        f_p = &str_2ghz;
+    } else if (s1g_band) {
+        f_p = &str_s1ghz;
+    } else {
+        f_p = &str_5ghz;
+    }
 
 again:
     f = g_atomic_pointer_get(f_p);
@@ -377,7 +384,13 @@ again:
         const guint             *freqs;
         int                      i;
 
-        freqs = bg_band ? nm_utils_wifi_2ghz_freqs() : nm_utils_wifi_5ghz_freqs();
+        if (bg_band) {
+            freqs = nm_utils_wifi_2ghz_freqs();
+        } else if (s1g_band) {
+            freqs = nm_utils_wifi_s1ghz_freqs();
+        } else {
+            freqs = nm_utils_wifi_5ghz_freqs();
+        }
         for (i = 0; freqs[i]; i++) {
             if (i > 0)
                 nm_str_buf_append_c(&strbuf, ' ');
@@ -597,9 +610,11 @@ nm_supplicant_config_add_setting_wireless(NMSupplicantConfig *self,
             const char *freqs = NULL;
 
             if (nm_streq(band, "a"))
-                freqs = wifi_freqs_to_string(FALSE);
+                freqs = wifi_freqs_to_string(FALSE, FALSE);
             else if (nm_streq(band, "bg"))
-                freqs = wifi_freqs_to_string(TRUE);
+                freqs = wifi_freqs_to_string(TRUE, FALSE);
+            else if (nm_streq(band, "s1g"))
+                freqs = wifi_freqs_to_string(FALSE, TRUE);
 
             if (freqs
                 && !nm_supplicant_config_add_option(self,

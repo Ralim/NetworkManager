@@ -4537,6 +4537,17 @@ make_wireless_setting(shvarFile *ifcfg, GError **error)
                 g_free(value);
                 goto error;
             }
+        } else if (!strcmp(value, "s1g")) {
+            if (chan && chan > 51) {
+                g_set_error(error,
+                            NM_SETTINGS_ERROR,
+                            NM_SETTINGS_ERROR_INVALID_CONNECTION,
+                            "Band '%s' invalid for channel %u",
+                            value,
+                            (guint32) chan);
+                g_free(value);
+                goto error;
+            }
         } else {
             g_set_error(error,
                         NM_SETTINGS_ERROR,
@@ -4549,6 +4560,7 @@ make_wireless_setting(shvarFile *ifcfg, GError **error)
         g_object_set(s_wireless, NM_SETTING_WIRELESS_BAND, value, NULL);
         g_free(value);
     } else if (chan > 0) {
+        // There is not a good way to know if a channel number without band is s1g or 2.4/5Ghz. S1G only supported when band is specified
         if (chan > 14)
             g_object_set(s_wireless, NM_SETTING_WIRELESS_BAND, "a", NULL);
         else

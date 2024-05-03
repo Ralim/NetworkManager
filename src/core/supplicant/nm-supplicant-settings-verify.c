@@ -62,7 +62,7 @@ static const struct Opt opt_table[] = {
     OPT_BYTES("engine_id", 0),
     OPT_INT("fragment_size", 1, 2000),
     OPT_KEYWORD("freq_list", NULL),
-    OPT_INT("frequency", 2412, 5825),
+    OPT_INT("frequency", 900, 5825),
     OPT_KEYWORD("group", NM_MAKE_STRV("CCMP", "TKIP", "WEP104", "WEP40", "GCMP-256", )),
     OPT_BYTES("identity", 0),
     OPT_INT("ieee80211w", 0, 2),
